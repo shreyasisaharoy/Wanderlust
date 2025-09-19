@@ -1,0 +1,77 @@
+<% layout('/layouts/boilerplate') %>
+
+<style>
+/* (keep existing small styles if you have them) */
+#filters { display:flex; flex-wrap:nowrap; align-items:center; }
+.filter { text-align:center; margin-right:1rem; margin-top:2rem; opacity:0.7; }
+.filter:hover { opacity:1; cursor:pointer; }
+.tax-info { display:none; }
+.tax-toggle { border:1px solid #000; border-radius:1rem; height:3.25rem; padding:1rem; display:flex; align-items:center; margin-left:6rem; }
+</style>
+
+<div id="filters">
+  <!-- filters markup (unchanged) -->
+  <div class="filter"><div><i class="fa-solid fa-fire"></i></div><p>Trending</p></div>
+  <div class="filter"><div><i class="fa-solid fa-bed"></i></div><p>Rooms</p></div>
+  <div class="filter"><div><i class="fa-solid fa-mountain-city"></i></div><p>Iconic cities</p></div>
+  <div class="tax-toggle">
+    <div class="form-check-reverse form-switch">
+      <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">
+      <label class="form-check-label" for="flexSwitchCheckDefault">Display Total After Taxes</label>
+    </div>
+  </div>
+</div>
+
+<div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1">
+  <% if (!allListings || allListings.length === 0) { %>
+    <p>No listings found.</p>
+  <% } else { %>
+    <% for (var i = 0; i < allListings.length; i++) {
+         var list = allListings[i];
+
+         // defensive image handling:
+         // schema stores image as an object { url, filename } so prefer image.url
+         var imgSrc = '/images/placeholder.png'; // default fallback
+         if (list && list.image) {
+           if (typeof list.image === 'string' && list.image.trim().length) {
+             // in case some docs still have string path
+             imgSrc = list.image;
+           } else if (typeof list.image === 'object' && list.image.url) {
+             imgSrc = list.image.url;
+           }
+         }
+
+         // convert price to Indian-format if it's a number, else show as-is or blank
+         var priceText = (typeof list.price === 'number')
+           ? list.price.toLocaleString('en-IN')
+           : (list.price || '');
+    %>
+
+      <a href="/listings/<%= list._id %>" class="list-link">
+        <div class="card col listing-card">
+          <img src="<%= imgSrc %>" class="card-img-top" style="height:20rem; object-fit:cover;" alt="listings-img">
+          <div class="card-img-overlay"></div>
+          <div class="card-body">
+            <p class="card-text">
+              <b><%= list.title %></b><br>
+              &#8377; <%= priceText %> / night
+              <i class="tax-info">&nbsp;&nbsp;18%GST</i>
+            </p>
+          </div>
+        </div>
+      </a>
+    <% } %>
+  <% } %>
+</div>
+
+<script>
+  let taxSwitch = document.getElementById("flexSwitchCheckDefault");
+  if (taxSwitch) {
+    taxSwitch.addEventListener("click", () => {
+      let taxInfo = document.getElementsByClassName("tax-info");
+      for (let info of taxInfo) {
+        info.style.display = info.style.display !== "inline" ? "inline" : "none";
+      }
+    });
+  }
+</script>

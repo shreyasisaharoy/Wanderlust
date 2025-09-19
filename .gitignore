@@ -1,0 +1,15 @@
+# Node dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Environment variables
+.env
+
+# Local uploads (images saved without Cloudinary)
+public/uploads/
+
+# OS / IDE junk
+.DS_Store
+Thumbs.db
+*.log

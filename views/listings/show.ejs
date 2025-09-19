@@ -1,0 +1,97 @@
+<% layout('/layouts/boilerplate') %>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card show-card">
+      <% 
+        // Resolve an imageUrl robustly:
+        let imageUrl = null;
+        if (listing && listing.image) {
+          if (typeof listing.image === 'string') {
+            imageUrl = listing.image;             // case you saved url directly
+          } else if (listing.image.url) {
+            imageUrl = listing.image.url;         // recommended: object with url
+          } else if (listing.image.path) {
+            imageUrl = listing.image.path;        // sometimes adapter uses .path
+          } else if (listing.image.secure_url) {
+            imageUrl = listing.image.secure_url;  // older cloudinary field
+          }
+        }
+      %>
+
+      <% if (imageUrl) { %>
+        <img src="<%= imageUrl %>" 
+             class="card-img-top show-img" 
+             alt="<%= listing ? listing.title : 'Listing image' %>">
+      <% } else { %>
+        <img src="https://via.placeholder.com/800x400?text=No+Image" 
+             class="card-img-top show-img" 
+             alt="No image available">
+      <% } %>
+
+      <div class="card-body">
+        <h3 class="card-title"><%= listing ? listing.title : "Untitled" %></h3>
+        <p class="card-text"><%= listing ? listing.description : "" %></p>
+        <p class="card-text">
+          <b>Price: </b> ₹<%= listing ? listing.price : "" %> / night
+        </p>
+        <p class="card-text">
+          <b>Location: </b> <%= listing ? listing.location : "" %>, <%= listing ? listing.country : "" %>
+        </p>
+      </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <!-- (rest of your file remains unchanged) -->
+
+    <!-- Reviews Section -->
+    <div class="mt-4">
+      <h4>Reviews</h4>
+      <% if (!listing || !listing.reviews || listing.reviews.length === 0) { %>
+        <p>No reviews yet.</p>
+      <% } else { %>
+        <% listing.reviews.forEach(review => { %>
+          <div class="card review-card mb-2 p-2">
+            <p><%= review.comment %></p>
+            <p><b>Rating:</b> <%= review.rating %> / 5</p>
+            <p><small>by <%= review.author ? review.author.username : "Unknown" %></small></p>
+
+            <% if (currentUser && review.author && review.author._id && review.author._id.equals && review.author._id.equals(currentUser._id)) { %>
+              <form method="POST" 
+                    action="/listings/fire/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE">
+                <button class="btn btn-sm btn-danger">Delete</button>
+              </form>
+            <% } %>
+          </div>
+        <% }) %>
+      <% } %>
+    </div>
+
+    <!-- Add Review Form -->
+    <% if (currentUser) { %>
+      <form method="POST" action="/listings/<%= listing._id %>/reviews" class="mt-3">
+        <div class="mb-2">
+          <label for="rating">Rating</label>
+          <input type="number" name="review[rating]" min="1" max="5" class="form-control" required>
+        </div>
+        <div class="mb-2">
+          <label for="comment">Comment</label>
+          <textarea name="review[comment]" class="form-control" rows="3" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Review</button>
+      </form>
+    <% } else { %>
+      <p><a href="/login">Login</a> to add a review.</p>
+    <% } %>
+  </div>
+
+  <!-- Owner Controls -->
+  <div class="col-md-4">
+    <% if (currentUser && listing && listing.owner && listing.owner._id && listing.owner._id.equals && listing.owner._id.equals(currentUser._id)) { %>
+      <a href="/listings/edit/<%= listing._id %>" class="btn btn-warning mb-2">Edit</a>
+      <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE">
+        <button class="btn btn-danger">Delete</button>
+      </form>
+    <% } %>
+  </div>
+</div>
